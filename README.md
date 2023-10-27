@@ -1,11 +1,13 @@
-# Aplicativo de chat usando MQTT
+# Aplicativo de chat baseado no protocolo MQTT
 
 Trabalho final da disciplina optativa de Tópicos Avançados em Computação XIII
 
 - Docente: Marco Áurelio Spohn
 - Discente: Nícolas Ruwer Hackenhar
 
-## Instalação
+A descrição do trabalho e o relatório de sua implementação estão disponíveis no diretório Docs.
+
+# Instalação
 
 Instalar as dependências do projeto
 
