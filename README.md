@@ -12,7 +12,7 @@ A descrição do trabalho e o relatório de sua implementação estão disponív
 Instalar as dependências do projeto
 
 ```sh
-pip install -r requirements. txt
+pip install -r requirements.txt
 ```
 Para executar a aplicação
 
