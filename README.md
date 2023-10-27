@@ -1,6 +1,6 @@
 # Aplicativo de chat baseado no protocolo MQTT
 
-Trabalho final da disciplina optativa de Tópicos Avançados em Computação XIII
+Trabalho final da disciplina optativa de Tópicos Avançados em Computação XIII da Universidade Federal de Santa Catarina
 
 - Docente: Marco Áurelio Spohn
 - Discente: Nícolas Ruwer Hackenhar
