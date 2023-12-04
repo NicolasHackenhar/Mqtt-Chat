@@ -17,9 +17,8 @@ def imprimirMenu():
 		print("6. Visualizar solicitações de conversa")
 		print("7. Aceitar solicitação de conversa")
 		print("8. Enviar mensagem")
-		print("9. Visualizar conversas")
-		print("10. Gerenciar grupo")
-		print("11. Sair")
+		print("9. Gerenciar grupo")
+		print("10. Sair")
 	
 		print("")
 
@@ -27,6 +26,7 @@ def visualizar_usuarios():
 	with mutexTerminal:
 		os.system('clear')
 		print_users()
+		print()
 		input("Pressione enter para voltar ao menu.")
 
 def print_users():
@@ -36,9 +36,14 @@ def print_users():
 def criar_grupo():
 	with mutexTerminal:
 		os.system('clear')
-		name = input("Digite o nome do grupo: ")
-		client.create_group(name=name)
-		input("Pressione enter para voltar ao menu.")
+		name = input("Digite o nome do grupo ou \\voltar para voltar ao menu: ")
+		if name == "\\voltar":
+			return
+		name = name.strip()
+		if name != "":
+			client.create_group(name=name)
+			print("Grupo criado com sucesso")
+			input("Pressione enter para voltar ao menu.")
 
 def visualizar_grupos():
 	with mutexTerminal:
@@ -50,6 +55,10 @@ def print_groups():
 	for group, attribute in client.groupHandler.groups.items():
 		print(f"Grupo {group}: ")
 		for key, value in attribute.items():
+
+			if key == "messages":
+				continue
+
 			if key == "membros":
 				print(f"\t{key}:")
 				for memberName, status in value.items():
@@ -62,10 +71,14 @@ def print_groups():
 def entrar_grupo():
 	with mutexTerminal:
 		print_groups()
-		group = input("Digite o nome do grupo: ")
-		client.request_group_membership(name=group)
-		print("Solicitação enviada ao líder do grupo")
-		input("Pressione enter para voltar ao menu.")
+		group = input("Digite o nome do grupo ou \\voltar para voltar ao menu: ")
+		if group == "\\voltar":
+			return
+		group = group.strip()
+		if group != "":
+			client.request_group_membership(name=group)
+			print("Solicitação enviada ao líder do grupo")
+			input("Pressione enter para voltar ao menu.")
 
 
 
@@ -74,10 +87,14 @@ def iniciar_conversa():
 		#TODO: validar se já existe um chat ativo entre os usuários
 		os.system('clear')
 		print_users()
-		user_target = input("\nInforme o usuário com quem deseja se comunicar:")
-		client.new_chat(user_target=user_target)
-		print("Solicitação enviada com sucesso")
-		input("Pressione enter para voltar ao menu.")
+		user_target = input("\nInforme o usuário com quem deseja se comunicar ou \\voltar para voltar ao menu:")
+		if user_target == "\\voltar":
+			return
+		user_target = user_target.strip()
+		if user_target != "":
+			client.new_chat(user_target=user_target)
+			print("Solicitação enviada com sucesso")
+			input("Pressione enter para voltar ao menu.")
 
 def visualizar_solicitacoes_conversa():
 	with mutexTerminal:
@@ -103,10 +120,15 @@ def aceitar_solicitacao_conversa():
 	with mutexTerminal:
 		#TODO: validar se já existe um chat ativo entre os usuários
 		os.system('clear')
-		user_target = input("Informe o usuário com quem deseja se comunicar:")
-		client.accept_chat(user_target=user_target)
-		print("Solicitação aprovada com sucesso")
-		input("Pressione enter para voltar ao menu.")
+		print_pendind_chats()
+		user_target = input("Informe o usuário com quem deseja se comunicar ou \\voltar para voltar ao menu:")
+		if user_target == "\\voltar":
+			return
+		user_target = user_target.strip()
+		if user_target != "":
+			client.accept_chat(user_target=user_target)
+			print("Solicitação aprovada com sucesso")
+			input("Pressione enter para voltar ao menu.")
 
 def enviar_mensagem():
 	with mutexTerminal:
@@ -127,33 +149,31 @@ def enviar_mensagem():
 
 def send_group_message(group):
 	client.inChat = True
+	client.session = group
 	client.groupHandler.print_chat_structure(group=group)
 	while True:
 		message = input("")
 		message = message.strip()
 		if message == "\\sair":
 			client.inChat = False
+			client.session = None
 			return
 		if message != "":
 			client.send_group_message(group=group, message=message)
 
 def send_message(target):
 	client.inChat = True
+	client.session = client.chatHandler.active_chats.get(target).get('topic')
 	client.chatHandler.print_chat_structure(target=target)
 	while True:
 		message = input("")
 		message = message.strip()
 		if message == "\\sair":
 			client.inChat = False
+			client.session = None
 			return
 		if message != "":
 			client.send_user_message(target=target, message=message)
-
-def visualizar_conversas():
-	with mutexTerminal:
-		os.system('clear')
-		print(client.chatHandler.active_chats)
-		input()
 
 def print_my_groups():
 	print("Grupos que você é lider:")
@@ -182,22 +202,35 @@ def gerenciar_grupo():
 	with mutexTerminal:
 		os.system('clear')
 		print_my_groups()
-		group = input("Informe o nome do grupo que deseja administrar: ")
-		os.system('clear')
-		print("Gerenciamento do grupo " + group)
-		print("")
-		print_group_membership_requests(group)
-		user = input("Digite o nome do usuário que deseja aprovar: ")
-		client.add_member(user=user, group=group)
-		print("Usuário aprovado com sucesso")
-		input("Pressione enter para voltar ao menu.")
+		group = input("Informe o nome do grupo que deseja administrar ou \\voltar para voltar ao menu: ")
+		if group == "\\voltar":
+			return
+		group = group.strip()
+		if group != "":
+			os.system('clear')
+			print("Gerenciamento do grupo " + group)
+			print("")
+			print_group_membership_requests(group)
+			user = input("Digite o nome do usuário que deseja aprovar ou \\voltar para voltar ao menu: ")
+			if user == "\\voltar":
+				return
+			user = user.strip()
+			if user != "":
+				client.add_member(user=user, group=group)
+				print("Usuário aprovado com sucesso")
+				input("Pressione enter para voltar ao menu.")
 
 
 user = input("Informe seu usuário: ")
 
+user = user.strip()
+if user == "":
+	print("Usuário inválido")
+	exit()
+
 client = Client(user=user)
 print("Inicializando...")
-time.sleep(5)
+time.sleep(3)
 client.subscribeActiveChats()
 
 while True:
@@ -221,9 +254,8 @@ while True:
 		if option == "8":
 			enviar_mensagem()
 		if option == "9":
-			visualizar_conversas()
-		if option == "10":
 			gerenciar_grupo()
-		if option == "11":
+		if option == "10":
 			client.logout()
+			time.sleep(1)
 			exit()

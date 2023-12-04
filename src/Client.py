@@ -13,6 +13,7 @@ class Client:
         self.chatHandler = ChatHandler(self.user)
 
         self.inChat = False
+        self.session = None
 
         self.client = mqtt.Client(client_id=f"{self.user}",  protocol=mqtt.MQTTv5, reconnect_on_failure=False)
         self.client.connect(host="localhost", clean_start=False)
@@ -50,7 +51,7 @@ class Client:
 
         if any(topic[0] == valor['topic'] for _, valor in self.chatHandler.active_chats.items()):
             self.chatHandler.handle_new_chat_message(message=messagePayload, topic=topic[0])
-            if self.inChat == True:
+            if self.inChat == True and self.session == topic[0]:
                 self.chatHandler.print_chat_structure(topic=topic[0])
 
              
@@ -63,7 +64,7 @@ class Client:
                 self.groupHandler.handle_member_added_message(name=topic[1], message=messagePayload, member=topic[3])
             if topic[2] == "messages":
                 self.groupHandler.handle_new_group_message(group=topic[1], message=messagePayload)
-                if self.inChat == True:
+                if self.inChat == True and self.session == topic[1]:
                     self.groupHandler.print_chat_structure(group=topic[1])
         
         elif topic[0] == 'CONTROL':
@@ -96,8 +97,6 @@ class Client:
             payload=payload,
             qos=qos, 
             retain=retain)
-
-        self.client.disconnect()
 
     def create_group(self, name):
         topic, payload, qos, retain = self.groupHandler.create(name)
@@ -160,9 +159,12 @@ class Client:
 
         self.client.subscribe(topic=message['topic'], options=mqtt.SubscribeOptions(qos=2, noLocal=False))
 
+        del self.chatHandler.pending_chats[user_target]
+
+
     def send_group_message(self, group,  message):
         #TODO: validar se o usuário está no grupo
-        topic, payload, qos, retain = self.chatHandler.send_group_message(self.user, group, message)
+        topic, payload, qos, retain = self.groupHandler.send_group_message(self.user, group, message)
         self.client.publish(
             topic=topic, 
             payload=payload,

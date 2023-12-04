@@ -30,7 +30,17 @@ class GroupHandler:
         retain = True
         return topic, payload, qos, retain
 
-            
+    def send_group_message(self, user, group, message):
+        topic = f"GROUPS/{group}/messages"
+        payload = json.dumps({
+            "user": user, 
+            "message": message, 
+            "created_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            })
+        qos = 2
+        retain = False
+
+        return topic, payload, qos, retain        
     def handle_new_group_creation_message(self, name, message):
         self.groups[name] = {}
         self.groups[name]["lider"] = {}
